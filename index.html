@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<br>
+  <!-- Part 1 — Core Web APIs (DOM, Events, Observers) -->
+   <p id="demo">Hello</p>
+<button onclick="changeText()">Change Text</button>
+
+<script>
+       function changeText() {
+  document.getElementById("demo").textContent = "Text changed!";
+}
+</script>
+<br/><br/><br/>
+<h1>Create and Append Elements</h1>
+<ul id="list"></ul>
+<script>
+ 
+const li = document.createElement("li");
+li.textContent = "New item added!";
+document.getElementById("list").appendChild(li);
+</script>
+<br/><br/><br/>
+<h1>MutationObserver</h1>
+<div id="target">Watching...</div>
+<script>
+const target = document.getElementById("target");
+const observer = new MutationObserver(mutations => {
+  console.log("DOM changed!", mutations);
+});
+observer.observe(target, { childList: true, characterData: true, subtree: true });
+
+// Example change:
+setTimeout(() => target.textContent = "Changed after 2s!", 2000);
+</script>
+
+<br/><br/><br/>
+<h1>IntersectionObserver (Lazy Loading / Visibility)</h1>
+<img id="photo" data-src="https://picsum.photos/300" width="300" height="200" alt="Lazy Load">
+
+<script>
+const img = document.getElementById('photo');
+const observer1 = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    img.src = img.dataset.src;
+    observer1.unobserve(img);
+  }
+});
+observer1.observe(img);
+</script>
+<br/><br/><br/>
+<h1>ResizeObserver (detect element resize)</h1>
+<div id="box" style="width:100px; height:100px; background:tomato;"></div>
+<script>
+const box = document.getElementById("box");
+const resizeObserver = new ResizeObserver(entries => {
+  console.log("Size changed:", entries[0].contentRect);
+});
+resizeObserver.observe(box);
+
+// Demo: change size after 2s
+setTimeout(() => box.style.width = "200px", 2000);
+</script>
+<br/><br/><br/>
+<h1>Clipboard API (copy text)</h1>
+<button id="copyBtn">Copy</button>
+<script>
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  await navigator.clipboard.writeText("Copied text!");
+  alert("Text copied to clipboard!");
+});
+</script>
+<br/><br/><br/>
+<h1>Full screen api</h1>
+<div id="box" style="width:200px; height:150px; background:skyblue;">Click to Fullscreen</div>
+<script>
+document.getElementById("box").addEventListener("click", e => {
+  e.target.requestFullscreen();
+});
+</script>
+<br/><br/><br/>
+<h1>Selection API (get selected text)</h1>
+<p>Select some of this text and click the button below.</p>
+<button onclick="getSelected()">Get Selection</button>
+
+<script>
+function getSelected() {
+  const text = window.getSelection().toString();
+  alert("You selected: " + text);
+}
+</script>
+<br/><br/><br/>
+<h1>Range API (highlight selection)</h1>
+<p id="p1">Highlight part of this text.</p>
+<script>
+const range = document.createRange();
+const p = document.getElementById("p1");
+range.setStart(p.firstChild, 0);
+range.setEnd(p.firstChild, 9);
+const sel = window.getSelection();
+sel.removeAllRanges();
+sel.addRange(range);
+console.log(sel)
+</script>
+
+<br/><br/><br/>
+<h1>Shadow DOM exapmle</h1>
+<div id="host"></div>
+<script>
+const host = document.getElementById('host');
+const shadow = host.attachShadow({mode: 'open'});
+shadow.innerHTML = `<p style="color:blue">Inside Shadow DOM</p>`;
+</script>
+
+  <!-- Part 1 — Core Web APIs (DOM, Events, Observers end) -->
+  <!-- Part 2  — Core Web APIs (DOM, Events, Observers start) -->
+<!-- fetch()
+WebSocket
+EventSource
+WebRTC
+Streams API -->
+
+<br/><br/><br/>
+<h1>Fetch api from server</h1>
+<script>
+fetch("https://jsonplaceholder.typicode.com/posts/1")
+  .then(res => res.json())
+  .then(data => console.log("Post:", data))
+  .catch(err => console.error(err));
+</script>
+<br/><br/><br/>
+<h1>Local Storage api</h1>
+<script>
+// Save data
+localStorage.setItem("username", "Bashir");
+
+// Get data
+console.log(localStorage.getItem("username"));
+
+// Remove data
+localStorage.removeItem("username");
+
+</script>
+<h1>Session Storage api</h1>
+<script>
+sessionStorage.setItem("mode", "dark");
+console.log(sessionStorage.getItem("mode"));
+</script>
+<br/><br/><br/>
+<h1>Geolocation api</h1>
+<script>
+navigator.geolocation.getCurrentPosition(
+  pos => {
+    console.log("Latitude:", pos.coords.latitude);
+    console.log("Longitude:", pos.coords.longitude);
+  },
+  err => console.error(err)
+);
+</script>
+
+<br/><br/><br/>
+<h1>Camera / Mobile Device api</h1>
+
+<video id="recordPreview" autoplay playsinline width="320" height="240"></video><br>
+<button id="startRec">Start Recording</button>
+<button id="stopRec">Stop & Download</button>
+
+<script>
+let recorder, stream;
+const video = document.getElementById("recordPreview");
+let chunks = [];
+
+document.getElementById("startRec").onclick = async () => {
+  stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  video.srcObject = stream;
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.onstop = e => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "recorded_video.webm";
+    a.click();
+  };
+  recorder.start();
+  console.log("Recording started...");
+};
+
+document.getElementById("stopRec").onclick = () => {
+  recorder.stop();
+  stream.getTracks().forEach(track => track.stop());
+  console.log("Recording stopped.");
+};
+</script>
+
+
+
+
+<br/><br/><br/>
+<h1 id="cop">Clicpboard api</h1>
+<button onclick="copyText()">Copy</button>
+<script>
+function copyText() {
+    const c=document.querySelector('#cop')
+  navigator.clipboard.writeText(c.innerHTML)
+    .then(() => alert("Text copied!"));
+}
+
+</script>
+<br/><br/><br/>
+<h1>Timing API</h1>
+
+
+
+<script>
+setTimeout(() => console.log("Hello after 2 seconds"), 2000);
+let interval = setInterval(() => console.log("Repeating..."), 1000);
+setTimeout(() => clearInterval(interval), 5000);
+</script>
+
+<br/><br/><br/>
+<h1>WebSocket API</h1>
+<script>
+const socket = new WebSocket("wss://echo.websocket.org");
+socket.onopen = () => socket.send("Hello WebSocket!");
+socket.onmessage = event => console.log("Message:", event.data);
+</script>
+
+
+
+<br/><br/><br/>
+<h1>File Reader API</h1>
+<input type="file" id="fileInput" accept="application/pdf">
+<iframe id="pdfPreview" width="100%" height="500px"></iframe>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    //   const fi = e.target.files[0];
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    document.getElementById('pdfPreview').src = dataUrl; // show PDF
+  };
+  reader.readAsDataURL(file); // ✅ correct method
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<input type="file" id="pdfFile" accept="application/pdf">
+
+<pre id="output"></pre>
+
+
+<script>
+document.getElementById('pdfFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const arrayBuffer = await file.arrayBuffer();
+
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ') + '\n';
+  }
+
+  document.getElementById('output').textContent = text;
+});
+</script>
+
+
+
+<br/><br/><br/>
+<h1>Audio API</h1>
+
+
+<script>
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+osc.type = "sine";
+osc.frequency.value = 440;
+osc.connect(ctx.destination);
+osc.start();
+setTimeout(() => osc.stop(), 1000);
+</script>
+
+
+<br/><br/><br/>
+<h1>Pointer Mouse Event</h1>
+<div id="box" style="width:100px;height:100px;background:red;"></div>
+<script>
+document.getElementById("box").addEventListener("mousemove", e => {
+  console.log(`X: ${e.clientX}, Y: ${e.clientY}`);
+});
+</script>
+
+
+<br/><br/><br/>
+<h1>Intersection Observer API</h1>
+<div id="target" style="margin-top:100vh;height:100px;background:blue;"></div>
+
+
+<script>
+const observer2 = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) console.log("Element visible!");
+});
+observer2.observe(document.getElementById("target"));
+</script>
+
+
+<br/><br/><br/>
+<h1>Notification API</h1>
+<script>
+if (Notification.permission !== "granted") {
+  Notification.requestPermission();
+} else {
+  new Notification("Hello Bashir!", { body: "This is a test notification." });
+}
+</script>
+
+
+<br/><br/><br/>
+<h1>Battry Status API</h1>
+<script>
+navigator.getBattery().then(battery => {
+  console.log(`Battery: ${battery.level * 100}%`);
+});
+</script>
+<br/><br/><br/>
+<h1>Fullscreen API</h1>
+<button id="btn">Go Fullscreen</button>
+<script>
+document.getElementById("btn").onclick = () =>
+  document.documentElement.requestFullscreen();
+</script>
+
+
+  <!-- Part 2  — Core Web APIs (DOM, Events, Observers end) -->
+  <!-- Part 3  — Core Web APIs (DOM, Events, Observers start) -->
+<h2>Part 3cover all topic</h2>
+<ul>
+    <li>
+        Web Speech API (voice recognition/speech)
+Canvas API (2D drawing)
+WebGL (3D graphics)
+Payment Request API
+Service Workers / Cache API
+Vibration API (mobile)
+    </li>
+</ul>
+<br/><br/><br/>
+<h1>Canvas API — draw graphics & shapes</h1>
+<canvas id="canvas" width="300" height="150" style="border:1px solid #ccc;"></canvas>
+<script>
+const c = document.getElementById("canvas");
+let ctx1 = c.getContext("2d");
+
+// Rectangle
+ctx1.fillStyle = "skyblue";
+ctx1.fillRect(20, 20, 100, 50);
+
+// Circle
+ctx1.beginPath();
+ctx1.arc(200, 60, 30, 0, Math.PI * 2);
+ctx1.fillStyle = "tomato";
+ctx1.fill();
+
+// Text
+ctx1.font = "20px sans-serif";
+ctx1.fillStyle = "black";
+ctx1.fillText("Canvas API", 90, 130);
+</script>
+
+
+<br/><br/><br/>
+<h1>Web speech API</h1>
+<button onclick="speakText()">Speak</button>
+<script>
+function speakText() {
+  const msg = new SpeechSynthesisUtterance("Hello Bashir! How are you today?");
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+</script>
+
+
+  <!-- -- Part 3  — Core Web APIs (DOM, Events, Observers END) -->
+
+</body>
+</html>
