@@ -390,6 +390,27 @@ function speakText() {
   speechSynthesis.speak(msg);
 }
 </script>
+<br/><br/><br/>
+<h1>Speech Recognition API — voice-to-text (Chrome-only)</h1>
+<button onclick="startListening()">Start Talking</button>
+<p id="output"></p>
+<script>
+const output = document.getElementById("output");
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const rec = new SpeechRecognition();
+rec.lang = "en-US";
+rec.continuous = false;
+
+function startListening() {
+  rec.start();
+  output.textContent = "Listening...";
+}
+
+rec.onresult = e => {
+  output.textContent = e.results[0][0].transcript;
+};
+</script>
+
 
 
   <!-- -- Part 3  — Core Web APIs (DOM, Events, Observers END) -->
