@@ -410,8 +410,17 @@ rec.onresult = e => {
   output.textContent = e.results[0][0].transcript;
 };
 </script>
+<br/><br/><br/>
+<h1>Payment Request</h1>
+<script>
+if (window.PaymentRequest) {
+  const methodData = [{ supportedMethods: ["basic-card"] }];
+  const details = { total: { label: "Total", amount: { currency: "USD", value: "9.99" } } };
+  const pr = new PaymentRequest(methodData, details);
 
-
+  document.addEventListener("click", () => pr.show().then(res => res.complete("success")));
+}
+</script>
 
   <!-- -- Part 3  — Core Web APIs (DOM, Events, Observers END) -->
 
