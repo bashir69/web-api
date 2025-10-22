@@ -502,14 +502,335 @@ history.pushState({}, "", "?page=2");
 console.log("After push:", location.href);
 </script>
 
+<br/><br/><br/>
+<h1>Resize observer api</h1>
+<div id="resizeBox" style="width:100px;height:100px;background:lightgreen;"></div>
+<script>
+const ro = new ResizeObserver(entries => {
+  console.log("Size:", entries[0].contentRect.width, entries[0].contentRect.height);
+});
+ro.observe(document.getElementById("resizeBox"));
+</script>
 
+<br/><br/><br/>
+<h1>Mutation Observer API </h1>
+<div id="target">Hello</div>
 
+<script>
+const observer12 = new MutationObserver(mutations => console.log("DOM changed:", mutations));
+observer12.observe(document.getElementById("target"), { childList: true });
+setTimeout(() => document.getElementById("target").textContent = "Changed!", 2000);
+</script>
 
+<br/><br/><br/>
+<h1>Device Orientation API (mobile) </h1>
 
+<script>
+window.addEventListener("deviceorientation", e => {
+  console.log(`Alpha: ${e.alpha}, Beta: ${e.beta}, Gamma: ${e.gamma}`);
+});
+</script>
 
+<br/><br/><br/>
+<h1>performance API </h1>
+
+<script>
+performance.mark("start");
+// some operation
+setTimeout(() => {
+  performance.mark("end");
+  performance.measure("duration", "start", "end");
+  console.log(performance.getEntriesByType("measure"));
+}, 1000);
+</script>
 
 
   <!-- -- Part 3  — Core Web APIs (DOM, Events, Observers END) -->
+  <!-- -- Part 4  — Core Web APIs (DOM, Events, Observers start) -->
+   <br/> <br/> <br/> 
+   <h1>File System Access API — read/write local files</h1>
+   <button id="openFile">Open Text File</button>
+   
+<script>
+document.getElementById("openFile").onclick = async () => {
+  const [fileHandle] = await window.showOpenFilePicker();
+  const file = await fileHandle.getFile();
+  const text = await file.text();
+  alert("File content:\n" + text);
+};
+</script>
+
+   <br/> <br/> <br/> 
+   <h1>EyeDropper picker pick color fro screen</h1>
+ <button id="pickColor">Pick Color</button>
+<div id="colorBox" style="width:80px;height:80px;margin-top:10px;border:2px solid #000;"></div>
+<script>
+document.getElementById("pickColor").onclick = async () => {
+  const eye = new EyeDropper();
+  const result = await eye.open();
+ 
+  const color=document.getElementById("colorBox").style.background = result.sRGBHex;
+  alert(color)
+   navigator.clipboard.writeText(color)
+    .then(() => alert("Text copied!"));
+};
+</script>
+
+   <br/> <br/> <br/> 
+   <h1>Web Share API — share content with native share menu</h1>
+
+<div id="colorBox" style="width:80px;height:80px;margin-top:10px;border:2px solid #000;"></div>
+<button id="shareBtn">Share This</button>
+<script>
+document.getElementById("shareBtn").onclick = async () => {
+  if (navigator.share) {
+    await navigator.share({
+      title: "Hello from Bashir",
+      text: "Check out this cool website!",
+      url: "https://example.com"
+    });
+  } else {
+    alert("Web Share not supported.");
+  }
+};
+</script>
+   <br/> <br/> <br/> 
+   <h1>Web Share Target API (PWA only)</h1>
+<p>Allows your web app to receive shared data — e.g. text or images — from other apps.
+(Works only when installed as a Progressive Web App.)
+
+Manifest example:</p>
+{
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [{ "name": "file", "accept": ["image/*"] }]
+    }
+  }
+}
+
+<br/><br/><br/>
+<h1>WebGPU API</h1>
+<canvas id="gpuCanvas" width="400" height="200"></canvas>
+<script>
+if (!navigator.gpu) {
+  alert("WebGPU not supported in this browser");
+} else {
+  const adapter = await navigator.gpu.requestAdapter();
+  const device = await adapter.requestDevice();
+  const canvas = document.getElementById("gpuCanvas");
+  const ctx = canvas.getContext("webgpu");
+  alert("WebGPU initialized:", device);
+}
+</script>
+
+<br/><br/><br/>
+<h1>Clicpboard Past Image / past api</h1>
+<button id="pasteImg">Paste Image</button>
+<img id="preview" style="display:block;margin-top:10px;width:400px; height: 400px; background-color: red;">
+<script>
+document.getElementById("pasteImg").onclick = async () => {
+  const items = await navigator.clipboard.read();
+  for (const item of items) {
+    for (const type of item.types) {
+      if (type.startsWith("image/")) {
+        const blob = await item.getType(type);
+        document.getElementById("preview").src = URL.createObjectURL(blob);
+      }
+    }
+  }
+};
+</script>
+
+<br/><br/><br/>
+<h1>Notification Triggers API (Experimental)</h1>
+<p>Allows scheduling a notification at a later time (in Chrome Canary / flags).</p>
+
+<script>
+const Notification=async()=>{
+    const reg = await navigator.serviceWorker.getRegistration();
+
+await reg.showNotification("Meeting Reminder", {
+  body: "Gym at 4:24 PM!",
+  showTrigger: new TimestampTrigger(Date.now()+1000)
+});
+}
+</script>
+
+<br/><br/><br/>
+<h1>Web Speech + Audio Mixing Example</h1>
+<p>Combine Web Speech and Web Audio APIs..</p>
+
+<button id="speakBtn">Speak + Sound</button>
+<script>
+document.getElementById("speakBtn").onclick = () => {
+  // Speech
+  const msg = new SpeechSynthesisUtterance("Welcome Bashir!");
+  speechSynthesis.speak(msg);
+
+  // Audio tone
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  osc.type = "triangle";
+  osc.frequency.value = 440;
+  osc.connect(ctx.destination);
+  osc.start();
+  setTimeout(() => osc.stop(), 800);
+};
+
+</script>
+
+<br/> <br/> <br/>
+<h1>Network informstion API</h1>
+<script>
+const info =async()=>{
+const infoDetails = await navigator.connection;
+console.log(infoDetails.effectiveType)
+alert("Connection type:", `<span> this info : ${infoDetails.effectiveType}</span>`);
+alert("Downlink speed (Mbps):", infoDetails.downlink);
+} 
+info()
+</script>
+
+<br/> <br/> <br/>
+<h1>Idle Detection API</h1>
+<p>Detect when user is inactive or screen is locked.</p>
+<script>
+if ('IdleDetector' in window) {
+  const detector = new IdleDetector();
+  await detector.start();
+  detector.addEventListener('change', () => {
+    console.log('User state:', detector.userState);
+    console.log('Screen state:', detector.screenState);
+  });
+}
+/*User activation API
+Check if an event was triggered by direct user action.*/
+document.addEventListener("click", () => {
+  console.log("Is user activated?", navigator.userActivation.isActive);
+});
+</script>
+
+<br/><br/><br/>
+<h1>Screen Orientation API , Detect orientation change (portrait ↔ landscape).</h1>
+<script>
+console.log("Current orientation:", screen.orientation.type);
+screen.orientation.addEventListener("change", () =>
+  console.log("New orientation:", screen.orientation.type)
+);
+</script>
+
+<br/><br/><br/>
+<h1>Credential Management API, store or retrive credentials</h1>
+<script>
+const creds = new PasswordCredential({ id: "bashir", password: "12345" });
+navigator.credentials.store(creds);
+console.log("Credential saved!");
+</script>
+
+</script>
+
+<br/><br/><br/>
+<h1>Web Bluthooth API</h1>
+<button id="connectBLE">Connect to Bluetooth</button>
+<script>
+document.getElementById("connectBLE").onclick = async () => {
+  const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+  alert("Connected to " + device.name);
+};
+</script>
+
+<br/><br/><br/>
+<h1>USB API/h1>
+
+<button id="connectUSB">Connect USB Device</button>
+<script>
+document.getElementById("connectUSB").onclick = async () => {
+  const device = await navigator.usb.requestDevice({ filters: [] });
+  await device.open();
+  alert("USB connected: " + device.productName);
+};
+</script>
+
+  <!--  Part 4  — Core Web APIs (DOM, Events, Observers END) -->
+  <!--  Part 5  — Core Web APIs (DOM, Events, Observers start) -->
+
+  <br/><br/><br/>
+  <h1>Web Authentication API (WebAuthn)</h1>
+  <p>Use hardware keys or fingerprint/Face ID for login.</p>
+  <script>
+const register=async()=> {
+  const cred = await navigator.credentials.create({
+    publicKey: {
+      challenge: new Uint8Array(16),
+      rp: { name: "My Site" },
+      user: { id: new Uint8Array(16), name: "bashir@example.com", displayName: "Bashir" },
+      pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+      authenticatorSelection: { userVerification: "preferred" }
+    }
+  });
+  console.log("Credential created:", cred);
+}
+register();
+</script>
+  <br/><br/><br/>
+  <h1>Face Detection API (with Shape Detection)</h1>
+  <p>Face detection by webcam.</p>
+  <video id="vid" autoplay playsinline width="320"></video>
+<canvas id="out" width="320" height="240"></canvas>
+<script>
+if ("FaceDetector" in window) {
+  const det = new FaceDetector();
+  const vid = document.getElementById("vid");
+  const out = document.getElementById("out").getContext("2d");
+  navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    vid.srcObject = stream;
+    setInterval(async () => {
+      const faces = await det.detect(vid);
+      out.drawImage(vid, 0, 0);
+      faces.forEach(f => {
+        out.strokeStyle = "lime";
+        out.lineWidth = 3;
+        out.strokeRect(f.boundingBox.x, f.boundingBox.y, f.boundingBox.width, f.boundingBox.height);
+      });
+    }, 300);
+  });
+}
+</script>
+
+<br/>
+<br/>
+<br/>
+<h1>Screen share API</h1>
+<video id="scr" autoplay playsinline width="400"></video>
+<button id="share">Share Screen</button>
+<script>
+document.getElementById("share").onclick = async () => {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  document.getElementById("scr").srcObject = stream;
+};
+</script>
+<br/>
+<br/>
+<br/>
+<h1>Generic Sensor API (Accelerometer example) physical motion</h1>
+<script>
+if ("Accelerometer" in window) {
+  const acc = new Accelerometer({ frequency: 10 });
+  acc.addEventListener("reading", () => {
+    console.log(`X:${acc.x.toFixed(2)} Y:${acc.y.toFixed(2)} Z:${acc.z.toFixed(2)}`);
+  });
+  acc.start();
+}
+</script>
+
+
+  <!--  Part 5  — Core Web APIs (DOM, Events, Observers END) -->
 
 </body>
 </html>
